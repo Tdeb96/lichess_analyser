@@ -10,6 +10,7 @@ dependencies = [
     "ipywidgets>=8.1.7",
     "jupyterlab>=4.4.9",
     "pandas>=2.3.3",
+    "streamlit>=1.50.0",
     "tqdm>=4.67.1",
 ]
 
@@ -21,6 +22,8 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [dependency-groups]
-dev = [
-    "pytest>=8.4.2",
-]
+dev = []
+
+[tool.uv]
+# Ensure uv knows which optional dependency groups to install by default
+default-groups = ["dev"]
