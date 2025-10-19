@@ -1,0 +1,65 @@
+# Python build artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+.env/
+
+# Packaging
+build/
+dist/
+.eggs/
+*.egg-info/
+.installed.cfg
+
+# Unit test / coverage reports
+.coverage*
+.pytest_cache/
+htmlcov/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# macOS metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editors / IDEs
+.vscode/
+.idea/
+
+# Logs and debug
+*.log
+
+# Cache
+.cache/
+
+# Type checker caches
+mypy_cache/
+.dmypy.json
+
+# Ruff / lint caches
+.ruff_cache/
+
+# Data: keep the sample PGN file tracked; ignore large generated analysis outputs
+# If you generate large engine analysis files, place them under data/outputs/
+# and they will be ignored by the next rule.
+!/data/lichess_games.pgn
+data/outputs/
+
+# Engine binaries (if ever downloaded locally instead of Homebrew)
+stockfish*
+
+# Lock files (already tracked uv.lock; comment out if you want it ignored)
+# uv.lock
+
+# Temporary files
+*.tmp
+*.bak
+
+# IPython history
+.ipython_history
