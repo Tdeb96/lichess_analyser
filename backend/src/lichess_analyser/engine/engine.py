@@ -2,6 +2,7 @@ import shutil
 from typing import Optional
 
 import chess.engine
+from tqdm import tqdm
 
 
 class StockfishEngine:
@@ -47,50 +48,80 @@ class StockfishEngine:
             self.engine = None
             self.is_initialized = False
 
-    def get_game_phase(self: "StockfishEngine", board: "chess.Board") -> str:
-        """
-        Heuristically classify the position as Opening, MiddleGame, or EndGame.
+    # Note: game-phase detection has been moved to `lichess_analyser.phase.get_game_phase`
 
-        Approach:
-        - Use total remaining non-pawn material (NPM) for both sides plus queen presence.
-        - Initial NPM (excluding pawns) is 40 (QQ=18, RR=10, BBNN=12).
-        - High NPM (>=32) or both queens present -> Opening unless large trades.
-        - Transition with some trades and at least one queen -> MiddleGame.
-        - Low NPM (<=14) or no queens with clearly reduced material -> EndGame.
-
-        This avoids engine-specific, non-standard UCI debug commands (e.g. Stockfish's 'eval').
+    def evaluate_board_cp(
+        self: "StockfishEngine", board: "chess.Board", depth: int = 12
+    ) -> int:
         """
-        # Count pieces
-        piece_values = {
-            chess.KNIGHT: 3,
-            chess.BISHOP: 3,
-            chess.ROOK: 5,
-            chess.QUEEN: 9,
-        }
-        npm_total = 0
-        queens_present = False
-        for piece_type, value in piece_values.items():
-            count = len(board.pieces(piece_type, chess.WHITE)) + len(
-                board.pieces(piece_type, chess.BLACK)
+        Return a centipawn evaluation for `board` from White's perspective.
+
+        Uses the initialized engine to analyse the position at the requested depth.
+        If the engine is not initialized it will attempt to initialize it.
+
+        Mate scores are converted to large cp integers (mate -> +/- 100000 cp).
+        """
+        import chess.engine
+
+        if not self.is_initialized:
+            self.initialize()
+        if not self.is_initialized or self.engine is None:
+            raise RuntimeError(
+                "Stockfish engine is not available to evaluate positions"
             )
-            if piece_type == chess.QUEEN and count > 0:
-                queens_present = True
-            if piece_type != chess.QUEEN or count > 0:
-                npm_total += count * value
 
-        # Simple rule set
-        if npm_total >= 32 and queens_present:
-            return "Opening"
-        if not queens_present and npm_total <= 14:
-            return "EndGame"
-        if npm_total <= 12:  # Extreme reduction even if a lone queen remains
-            return "EndGame"
-        if queens_present and npm_total < 24:
-            return "MiddleGame"
-        # Fallback
-        if npm_total <= 18:
-            return "EndGame"
-        return "MiddleGame"
+        try:
+            info = self.engine.analyse(board, chess.engine.Limit(depth=depth))
+            score = info.get("score")
+            if score is None:
+                raise RuntimeError("Engine returned no score")
+            # Convert to White-perspective centipawns; handle mate by using a large value
+            pov = score.white()
+            cp = pov.score(mate_score=100000)
+            if cp is None:
+                # Defensive fallback
+                return 0
+            return int(cp)
+        except Exception:
+            raise
+
+    def analyze_game_evals(
+        self: "StockfishEngine",
+        game: "chess.pgn.Game",
+        depth: int = 12,
+        verbose: bool = False,
+    ) -> list[int]:
+        """
+        Produce a list of centipawn evaluations after each ply (half-move) for the game's mainline.
+
+        The returned list will have length equal to the number of plies in the game's mainline.
+        Each entry is an integer centipawn evaluation from White's perspective.
+        """
+        board = game.board()
+        evals: list[int] = []
+        moves = list(game.mainline_moves())
+
+        if verbose:
+            moves = tqdm(moves, desc="Analyzing positions")
+
+        for move in moves:
+            board.push(move)
+            cp = self.evaluate_board_cp(board, depth=depth)
+            evals.append(cp)
+        return evals
+        """
+        Produce a list of centipawn evaluations after each ply (half-move) for the game's mainline.
+
+        The returned list will have length equal to the number of plies in the game's mainline.
+        Each entry is an integer centipawn evaluation from White's perspective.
+        """
+        board = game.board()
+        evals: list[int] = []
+        for move in game.mainline_moves():
+            board.push(move)
+            cp = self.evaluate_board_cp(board, depth=depth)
+            evals.append(cp)
+        return evals
 
 
 if __name__ == "__main__":
