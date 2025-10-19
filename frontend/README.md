@@ -1,73 +1,52 @@
-# React + TypeScript + Vite
+# Frontend Chessboard Demo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A lightweight React + Vite setup using [`react-chessboard`](https://react-chessboard.vercel.app) and [`chess.js`] for move legality.
 
-Currently, two official plugins are available:
+## Features
+- Interactive chessboard with drag & drop piece movement
+- Automatic legal move validation (illegal moves snap back)
+- FEN display updates after each move
+- Move list (in SAN) for the current session
+- Reset button returns to initial position
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
+- React 18
+- Vite 5
+- TypeScript 5
+- `react-chessboard` for rendering
+- `chess.js` for move logic
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Install deps and start the dev server:
+```bash
+npm install
+npm run dev
+```
+The server prints a local URL (default `http://localhost:5173/` or next available port).
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Build & Preview
+```bash
+npm run build
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Code Overview
+- `src/App.tsx` – Main component (board, move list, FEN, reset)
+- `src/main.tsx` – React root bootstrap
+- `vite.config.ts` – Vite config with React plugin
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## How It Works
+1. A single `Chess` instance from `chess.js` tracks position.
+2. `onPieceDrop(sourceSquare, targetSquare)` attempts the move. If legal, board updates; else returns `false` to snap the piece back.
+3. The resulting FEN and SAN move list are rendered below the board.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Customization Ideas
+- Add orientation toggle (flip board)
+- Highlight last move squares
+- Add PGN import/export functionality
+- Add autoplay for a loaded PGN sequence
+- Integrate with backend engine for evaluation overlays
+
+## License
+This demo code is MIT licensed. See repository root for overall project license.

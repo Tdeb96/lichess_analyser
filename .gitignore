@@ -63,3 +63,11 @@ stockfish*
 
 # IPython history
 .ipython_history
+
+# Frontend build artifacts
+/frontend/node_modules/
+/frontend/dist/
+/frontend/build/
+/frontend/.env.local
+/frontend/.vite/
+
